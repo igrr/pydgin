@@ -299,18 +299,7 @@ def execute_fence_i(s, inst):
 
 
 def execute_scall(s, inst):
-    # test pass/fail
-    if s.testbin:
-        status = s.rf[28] >> 1
-        if status:
-            print
-            "  [ FAILED ] %s (test #%s)" % (s.exe_name, status)
-        else:
-            print
-            "  [ passed ] %s" % s.exe_name
-        s.running = False
-    else:
-        do_syscall(s)
+    raise NotImplementedInstError()
     s.pc += 4
 
 

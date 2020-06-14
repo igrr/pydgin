@@ -4,22 +4,9 @@
 
 import re
 
-# from . import elf
 from elftools.elf import elffile
-from .jit import *
+# These are used in the string exec'ed below:
 from .utils import *
-
-try:
-    import py
-
-    Source = py.code.Source
-except ImportError:
-    class Source:
-        def __init__(self, src):
-            self.src = src
-
-        def compile(self):
-            return self.src
 
 
 # -----------------------------------------------------------------------
@@ -98,17 +85,17 @@ def create_risc_decoder(encodings, isa_globals, debug=False):
         else:
             decoder += '    return execute_{}\n'.format(encodings[i][0])
 
-    source = Source('''
-@elidable
+    source = '''
+# @elidable
 def decode( inst ):
   {decoder_tree}
   else:
     raise FatalError('Invalid instruction 0x%x!' % inst )
-  '''.format(decoder_tree=decoder))
+  '''.format(decoder_tree=decoder)
 
     # print source
     environment = dict(globals().items())
     environment.update(isa_globals.items())
-    exec(source.compile(), environment)
+    exec(source, environment)
 
     return environment['decode']

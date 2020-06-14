@@ -69,9 +69,9 @@ class RegisterFile(object):
     # prints all registers (register dump)
     # per_row specifies the number of registers to display per row
     def print_regs(self, per_row=6):
-        for c in xrange(0, self.num_regs, per_row):
+        for c in range(0, self.num_regs, per_row):
             str = ""
-            for r in xrange(c, min(self.num_regs, c + per_row)):
+            for r in range(c, min(self.num_regs, c + per_row)):
                 str += "%s:%s " % (pad("%d" % r, 2),
                                    pad_hex(self.regs[r], len=(self.nbits / 4)))
             print(str)

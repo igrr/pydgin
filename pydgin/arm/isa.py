@@ -16,7 +16,7 @@ from pydgin.arm.utils import (
     addressing_mode_4,
 )
 from pydgin.jit import unroll_safe
-from pydgin.misc import create_risc_decoder, FatalError
+from pydgin.misc import create_risc_decoder, FatalError, NotImplementedInstError
 # common bitwise utils
 from pydgin.utils import (
     trim_32,
@@ -1171,12 +1171,8 @@ def execute_sub(s, inst):
 # -----------------------------------------------------------------------
 # swi
 # -----------------------------------------------------------------------
-from pydgin.arm.syscalls import do_syscall
-
-
 def execute_swi(s, inst):
-    if condition_passed(s, inst.cond):
-        do_syscall(s)
+    raise NotImplementedInstError()
     s.rf[PC] = s.fetch_pc() + 4
 
 
