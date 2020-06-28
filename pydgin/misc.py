@@ -36,17 +36,20 @@ class NotImplementedInstError(FatalError):
 # -----------------------------------------------------------------------
 def load_program(fp, mem, alignment=0, is_64bit=False):
     ef = elffile.ELFFile(fp)
-    # mem_image = elf.elf_reader(fp, is_64bit=is_64bit)
-    # sections = mem_image.get_sections()
     entrypoint = ef.header['e_entry']
 
-    for section in ef.iter_sections():
-        data = section.data()
-        load_addr = section['sh_addr']
-        for i, b in enumerate(data):
-            mem.write(load_addr + i, 1, b)
+    for segment in ef.iter_segments():
+        if segment['p_type'] == "PT_LOAD":
+            for section in ef.iter_sections():
+                if not segment.section_in_segment(section) or section['sh_type'] == 'SHT_NOBITS':
+                    continue
+                data = section.data()
+                print("Loading {} bytes from {}".format(len(data), section.name))
+                load_addr = section['sh_addr']
+                for i, b in enumerate(data):
+                    mem.write(load_addr + i, 1, b)
 
-    return entrypoint, 0
+    return entrypoint
 
 
 # -----------------------------------------------------------------------
