@@ -3,18 +3,13 @@
 # =======================================================================
 
 from .debug import Debug, pad, pad_hex
-from .jit import elidable, unroll_safe, hint
-from .utils import r_uint, specialize
+from .utils import r_uint
 
-try:
-    from rpython.rlib.rarithmetic import r_uint32, widen
-except ImportError:
-    # if rpython not in path, we can use normal ints to store data
-    r_uint32 = int
+r_uint32 = int
 
 
-    def widen(value):
-        return value
+def widen(value):
+    return value
 
 
 # -----------------------------------------------------------------------
@@ -41,7 +36,6 @@ class RegisterFile(object):
                         len=self.debug_nchars)))
         return self.regs[idx]
 
-    @specialize.argtype(2)
     def __setitem__(self, idx, value):
         value = r_uint(value)
         self._setitemimpl(idx, value)
@@ -131,8 +125,6 @@ class _WordMemory(object):
                   "addr=%s size=%s") % (x, pad_hex(addr), pad_hex(self.data_section))
             raise Exception()
 
-    @specialize.argtype(1)
-    @unroll_safe
     def read(self, start_addr, num_bytes):
         assert 0 < num_bytes <= 4
         start_addr = r_uint(start_addr)
@@ -165,13 +157,10 @@ class _WordMemory(object):
     # only difference is the elidable annotation, which we assume the
     # instructions are not modified (no side effects, assumes the addresses
     # correspond to the same instructions)
-    @elidable
     def iread(self, start_addr, num_bytes):
         assert start_addr & 0b11 == 0  # only aligned accesses allowed
         return r_uint(widen(self.data[start_addr >> 2]))
 
-    @specialize.argtype(1, 3)
-    @unroll_safe
     def write(self, start_addr, num_bytes, value):
         assert 0 < num_bytes <= 4
         start_addr = r_uint(start_addr)
@@ -220,7 +209,6 @@ class _ByteMemory(object):
             print("WARNING: writing null pointer!")
             raise Exception()
 
-    @unroll_safe
     def read(self, start_addr, num_bytes):
         if self.debug.enabled("memcheck") and not self.suppress_debug:
             self.bounds_check(start_addr)
@@ -238,7 +226,6 @@ class _ByteMemory(object):
     # only difference is the elidable annotation, which we assume the
     # instructions are not modified (no side effects, assumes the addresses
     # correspond to the same instructions)
-    @elidable
     def iread(self, start_addr, num_bytes):
         value = 0
         for i in range(num_bytes - 1, -1, -1):
@@ -246,7 +233,6 @@ class _ByteMemory(object):
             value = value | ord(self.data[start_addr + i])
         return value
 
-    @unroll_safe
     def write(self, start_addr, num_bytes, value):
         if self.debug.enabled("memcheck") and not self.suppress_debug:
             self.bounds_check(start_addr)
@@ -283,7 +269,6 @@ class _SparseMemory(object):
         self.block_dict[block_addr] = self.BlockMemory(size=self.block_size,
                                                        suppress_debug=True)
 
-    @elidable
     def get_block_mem(self, block_addr):
         # block_idx  = block_dict[
         if block_addr not in self.block_dict:
@@ -291,10 +276,7 @@ class _SparseMemory(object):
         block_mem = self.block_dict[block_addr]
         return block_mem
 
-    @elidable
     def iread(self, start_addr, num_bytes):
-        start_addr = hint(start_addr, promote=True)
-        num_bytes = hint(num_bytes, promote=True)
         end_addr = start_addr + num_bytes - 1
 
         block_addr = self.block_mask & start_addr
@@ -325,7 +307,6 @@ class _SparseMemory(object):
         if self.debug.enabled("mem"):
             print(':: RD.MEM[%s] = ' % pad_hex(start_addr))
         block_addr = self.block_mask & start_addr
-        block_addr = hint(block_addr, promote=True)
         block_mem = self.get_block_mem(block_addr)
         value = block_mem.read(start_addr & self.addr_mask, num_bytes)
         if self.debug.enabled("mem"):
@@ -337,6 +318,5 @@ class _SparseMemory(object):
             print(':: WR.MEM[%s] = %s' % (pad_hex(start_addr),
                                           pad_hex(value)))
         block_addr = self.block_mask & start_addr
-        block_addr = hint(block_addr, promote=True)
         block_mem = self.get_block_mem(block_addr)
         block_mem.write(start_addr & self.addr_mask, num_bytes, value)
