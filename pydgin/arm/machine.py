@@ -5,7 +5,7 @@
 from pydgin.debug import pad, pad_hex
 from pydgin.machine import Machine
 from pydgin.storage import RegisterFile
-from pydgin.utils import r_uint, specialize
+from pydgin.utils import r_uint
 
 
 # -----------------------------------------------------------------------
@@ -84,7 +84,6 @@ class ArmRegisterFile(RegisterFile):
         else:
             return self.regs[idx]
 
-    @specialize.argtype(2)
     def __setitem__(self, idx, value):
         value = r_uint(value)
         if idx == 15:

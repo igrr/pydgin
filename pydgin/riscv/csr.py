@@ -47,8 +47,7 @@ class Csr(object):
             return self.state.mepc
 
         else:
-            print
-            "WARNING: can't get csr %x" % csr_id
+            print("WARNING: can't get csr %x" % csr_id)
             return 0
 
     def set_csr(self, csr_id, val):
@@ -62,16 +61,13 @@ class Csr(object):
             if val & 0x1 and self.state.testbin:
                 status = val >> 1
                 if status:
-                    print
-                    "  [ FAILED ] %s (test #%s)" % (self.state.exe_name, status)
+                    print("  [ FAILED ] %s (test #%s)" % (self.state.exe_name, status))
                 else:
-                    print
-                    "  [ passed ] %s" % self.state.exe_name
+                    print("  [ passed ] %s" % self.state.exe_name)
                 self.state.running = False
 
         else:
-            print
-            "WARNING: can't set csr %x" % csr_id
+            print("WARNING: can't set csr %x" % csr_id)
 
     # ---------------------------------------------------------------------
     # get_mcpuid

@@ -1,4 +1,4 @@
-from pydgin.utils import intmask, r_ulonglong, specialize, trim_32
+from pydgin.utils import intmask, r_ulonglong, trim_32
 
 
 def signed(value, nbits):
@@ -10,25 +10,21 @@ def signed(value, nbits):
     return intmask(value)
 
 
-@specialize.argtype(0)
 def trim(value, nbits):
     value = r_ulonglong(value)
     mask = r_ulonglong(0xffffffffffffffff) >> (64 - nbits)
     return value & mask
 
 
-@specialize.argtype(0)
 def trim_64(value):
     value = r_ulonglong(value)
     return value & r_ulonglong(0xffffffffffffffff)
 
 
-@specialize.argtype(0)
 def sext_xlen(val):
     return val
 
 
-@specialize.argtype(0)
 def sext_32(value):
     value = r_ulonglong(value)
     value = 0x00000000ffffffff & value

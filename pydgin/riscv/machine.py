@@ -5,7 +5,7 @@
 from pydgin.riscv.csr import Csr, PRV_M
 from pydgin.riscv.utils import trim_64
 from pydgin.storage import RegisterFile
-from pydgin.utils import specialize, r_ulonglong
+from pydgin.utils import r_ulonglong
 
 
 # -------------------------------------------------------------------------
@@ -103,7 +103,6 @@ class RiscVRegisterFile(RegisterFile):
                               nbits=nbits
                               )
 
-    @specialize.argtype(2)
     def __setitem__(self, idx, value):
         return RegisterFile.__setitem__(self, idx, trim_64(value))
 
@@ -139,23 +138,20 @@ class RiscVFPRegisterFile(object):
 
     def __getitem__(self, idx):
         if self.debug.enabled("rf"):
-            print
-            ':: RD.RF[%s] = %s' % (
+            print(':: RD.RF[%s] = %s' % (
                 pad("%d" % idx, 2),
                 pad_hex(self.regs[idx],
-                        len=self.debug_nchars)),
+                        len=self.debug_nchars)))
         return self.regs[idx]
 
-    @specialize.argtype(2)
     def __setitem__(self, idx, value):
         value = trim_64(value)
         self.regs[idx] = value
         if self.debug.enabled("rf"):
-            print
-            ':: WR.RF[%s] = %s' % (
+            print(':: WR.RF[%s] = %s' % (
                 pad("%d" % idx, 2),
                 pad_hex(self.regs[idx],
-                        len=self.debug_nchars)),
+                        len=self.debug_nchars)))
 
     # -----------------------------------------------------------------------
     # print_regs
@@ -163,10 +159,9 @@ class RiscVFPRegisterFile(object):
     # prints all registers (register dump)
     # per_row specifies the number of registers to display per row
     def print_regs(self, per_row=6):
-        for c in xrange(0, self.num_regs, per_row):
-            str = ""
-            for r in xrange(c, min(self.num_regs, c + per_row)):
-                str += "%s:%s " % (pad("%d" % r, 2),
+        for c in range(0, self.num_regs, per_row):
+            s = ""
+            for r in range(c, min(self.num_regs, c + per_row)):
+                s += "%s:%s " % (pad("%d" % r, 2),
                                    pad_hex(self.regs[r]))
-            print
-            str
+            print(s)
