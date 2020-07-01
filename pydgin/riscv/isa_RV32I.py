@@ -5,7 +5,6 @@
 
 from pydgin.misc import NotImplementedInstError
 from pydgin.riscv.helpers import *
-from pydgin.riscv.syscalls import do_syscall
 from pydgin.riscv.utils import sext_xlen, sext_32, sext, signed, trim
 from pydgin.utils import trim_32
 
