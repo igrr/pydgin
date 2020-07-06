@@ -134,19 +134,27 @@ class RAM(MemoryLike):
 class MMIO(MemoryLike):
     WORD_SIZE = 4
 
-    def __init__(self, size_bytes: int, read_handlers: typing.Dict = None, write_handlers: typing.Dict = None):
+    def __init__(self, size_bytes: int, read_handlers: typing.Dict = None, write_handlers: typing.Dict = None,
+                 default_read_handler = None, default_write_handler = None):
         assert size_bytes % self.WORD_SIZE == 0
         self.size_bytes = size_bytes
         self.size_words = size_bytes // self.WORD_SIZE
         self.read_handlers = read_handlers or {}
         self.write_handlers = write_handlers or {}
+        def read_no_op(addr):
+            pass
+        def write_no_op(addr, val):
+            pass
+
+        self.default_read_handler = default_read_handler or read_no_op
+        self.default_write_handler = default_write_handler or write_no_op
 
     def read(self, addr: int, size_bytes: int) -> typing.Union[int, MemError]:
         if size_bytes != self.WORD_SIZE:
             return MemError()
         if addr % self.WORD_SIZE != 0:
             return MemError()
-        handler = self.read_handlers.get(addr, lambda x: 0)
+        handler = self.read_handlers.get(addr, self.default_read_handler)
         return handler(addr)
 
     def write(self, addr: int, size_bytes: int, value: int) -> typing.Optional[MemError]:
@@ -154,8 +162,9 @@ class MMIO(MemoryLike):
             return MemError()
         if addr % self.WORD_SIZE != 0:
             return MemError()
-        handler = self.write_handlers.get(addr, lambda x: 0)
+        handler = self.write_handlers.get(addr, self.default_write_handler)
         handler(addr, value)
+        return None
 
     def size(self) -> int:
         return self.size_bytes
