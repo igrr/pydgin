@@ -135,7 +135,9 @@ class MMIO(MemoryLike):
     WORD_SIZE = 4
 
     def __init__(self, size_bytes: int, read_handlers: typing.Dict = None, write_handlers: typing.Dict = None,
-                 default_read_handler = None, default_write_handler = None):
+                 default_read_handler=None, default_write_handler=None,
+                 valid_access_size: typing.List[int] = None,
+                 valid_alignment: typing.List[int] = None):
         assert size_bytes % self.WORD_SIZE == 0
         self.size_bytes = size_bytes
         self.size_words = size_bytes // self.WORD_SIZE
@@ -148,22 +150,31 @@ class MMIO(MemoryLike):
 
         self.default_read_handler = default_read_handler or read_no_op
         self.default_write_handler = default_write_handler or write_no_op
+        self.valid_access_size = valid_access_size or [4]
+        self.valid_alignment = valid_alignment or [0]
 
     def read(self, addr: int, size_bytes: int) -> typing.Union[int, MemError]:
-        if size_bytes != self.WORD_SIZE:
-            return MemError()
-        if addr % self.WORD_SIZE != 0:
-            return MemError()
+        err = self._check_addr_size(addr, size_bytes)
+        if err is not None:
+            return err
+
         handler = self.read_handlers.get(addr, self.default_read_handler)
         return handler(addr)
 
     def write(self, addr: int, size_bytes: int, value: int) -> typing.Optional[MemError]:
-        if size_bytes != self.WORD_SIZE:
-            return MemError()
-        if addr % self.WORD_SIZE != 0:
-            return MemError()
+        err = self._check_addr_size(addr, size_bytes)
+        if err is not None:
+            return err
+
         handler = self.write_handlers.get(addr, self.default_write_handler)
         handler(addr, value)
+        return None
+
+    def _check_addr_size(self, addr: int, size_bytes: int) -> typing.Optional[MemError]:
+        if size_bytes not in self.valid_access_size:
+            return MemError()
+        if addr % size_bytes not in self.valid_alignment:
+            return MemError()
         return None
 
     def size(self) -> int:
