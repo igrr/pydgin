@@ -96,10 +96,49 @@ class MemoryLike(ABC):
         pass
 
 
-class RAM(MemoryLike):
+class MemAccessRecord(object):
+    def __init__(self, is_write: bool, addr: int, size_bytes: int, val: int):
+        self.is_write = is_write
+        self.addr = addr
+        self.size_bytes = size_bytes
+        self.val = val
+
+    def __str__(self):
+        return "{}{}@0x{:08x}=0x{:08x}".format("W" if self.is_write else "R",
+                                               self.size_bytes,
+                                               self.addr,
+                                               self.val)
+
+
+class Monitor(object):
+    class NoMonitorCM(object):
+        def __init__(self, m):
+            self.m = m
+            self.saved_access_list = None
+
+        def __enter__(self):
+            self.saved_access_list = self.m.access_list
+            self.m.access_list = None
+
+        def __exit__(self, exc_type, exc_val, exc_tb):
+            self.m.access_list = self.saved_access_list
+
+    def __init__(self):
+        self.access_list = None  # type: typing.Optional[typing.List[MemAccessRecord]]
+
+    def monitor(self, is_write: bool, addr: int, size_bytes: int, val: int):
+        if self.access_list is not None:
+            self.access_list.append(MemAccessRecord(is_write, addr, size_bytes, val))
+
+    def no_monitor(self) -> NoMonitorCM:
+        return Monitor.NoMonitorCM(self)
+
+
+class RAM(MemoryLike, Monitor):
     WORD_SIZE = 4
 
     def __init__(self, size_bytes: int):
+        super(RAM, self).__init__()
         assert size_bytes % self.WORD_SIZE == 0
         self.size_bytes = size_bytes
         self.size_words = size_bytes // self.WORD_SIZE
@@ -113,13 +152,16 @@ class RAM(MemoryLike):
         word_addr = addr // self.WORD_SIZE
         word = self.words[word_addr]
         shift = (addr % self.WORD_SIZE) * 8
-        return [0, 0xff, 0xffff, 0, 0xffffffff][size_bytes] & (word >> shift)
+        res = [0, 0xff, 0xffff, 0, 0xffffffff][size_bytes] & (word >> shift)
+        self.monitor(False, addr, size_bytes, res)
+        return res
 
     def write(self, addr: int, size_bytes: int, value: int) -> typing.Optional[MemError]:
         if size_bytes not in [1, 2, 4]:
             return MemError()
         if addr % size_bytes != 0:
             return MemError()
+        self.monitor(False, addr, size_bytes, value)
         word_addr = addr // self.WORD_SIZE
         old_word = self.words[word_addr]
         shift = (addr % self.WORD_SIZE) * 8
@@ -131,7 +173,7 @@ class RAM(MemoryLike):
         return self.size_bytes
 
 
-class MMIO(MemoryLike):
+class MMIO(MemoryLike, Monitor):
     WORD_SIZE = 4
 
     def __init__(self, size_bytes: int, read_handlers: typing.Dict = None, write_handlers: typing.Dict = None,
@@ -139,6 +181,7 @@ class MMIO(MemoryLike):
                  valid_access_size: typing.List[int] = None,
                  valid_alignment: typing.List[int] = None):
         assert size_bytes % self.WORD_SIZE == 0
+        super(MMIO, self).__init__()
         self.size_bytes = size_bytes
         self.size_words = size_bytes // self.WORD_SIZE
         self.read_handlers = read_handlers or {}
@@ -159,13 +202,16 @@ class MMIO(MemoryLike):
             return err
 
         handler = self.read_handlers.get(addr, self.default_read_handler)
-        return handler(addr)
+        res = handler(addr)
+        self.monitor(False, addr, size_bytes, res)
+        return res
 
     def write(self, addr: int, size_bytes: int, value: int) -> typing.Optional[MemError]:
         err = self._check_addr_size(addr, size_bytes)
         if err is not None:
             return err
 
+        self.monitor(False, addr, size_bytes, value)
         handler = self.write_handlers.get(addr, self.default_write_handler)
         handler(addr, value)
         return None
@@ -181,9 +227,10 @@ class MMIO(MemoryLike):
         return self.size_bytes
 
 
-class AddressSpace(MemoryLike):
+class AddressSpace(MemoryLike, Monitor):
     def __init__(self, regions: typing.List[typing.Tuple[int, MemoryLike]]):
         assert regions
+        super(AddressSpace, self).__init__()
         self.regions = sorted(regions, key=lambda p: p[0])
         self.regions_start = [p[0] for p in self.regions]
         self.regions_end = [p[0] + p[1].size() for p in self.regions]
@@ -211,12 +258,15 @@ class AddressSpace(MemoryLike):
         err, region_index, relative_addr = self._find_region(addr)
         if err:
             return err
-        return self.regions[region_index][1].read(relative_addr, size_bytes)
+        res = self.regions[region_index][1].read(relative_addr, size_bytes)
+        self.monitor(False, addr, size_bytes, res)
+        return res
 
     def write(self, addr: int, size_bytes: int, value: int) -> typing.Optional[MemError]:
         err, region_index, relative_addr = self._find_region(addr)
         if err:
             return err
+        self.monitor(False, addr, size_bytes, value)
         return self.regions[region_index][1].write(relative_addr, size_bytes, value)
 
 
