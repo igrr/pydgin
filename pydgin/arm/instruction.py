@@ -101,8 +101,9 @@ class Instruction(object):
     def W(self):
         return (self.bits >> 21) & 0b1
 
-    # def L( self ):
-    #  return (self.bits >> 20) & 0b1
+    @property
+    def L(self):
+       return (self.bits >> 20) & 0b1
 
     @property
     def S(self):
