@@ -62,10 +62,8 @@ def create_risc_decoder(encodings, isa_globals, debug=False):
 
     encodings = list(map(remove_ignored_chars, encodings))
 
-    inst_nbits = len(encodings[0][1])
-
     def split_encodings(enc):
-        return [x for x in re.split('(x*)', enc) if x]
+        return [x for x in re.split('(x+)', enc) if x]
 
     bit_fields = [split_encodings(x[1]) for x in encodings]
 
@@ -96,7 +94,7 @@ def decode( inst ):
     raise FatalError('Invalid instruction 0x%x!' % inst )
   '''.format(decoder_tree=decoder)
 
-    # print source
+    # print(source)
     environment = dict(globals().items())
     environment.update(isa_globals.items())
     exec(source, environment)
