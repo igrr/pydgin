@@ -53,8 +53,8 @@ encodings = [
     ['and', '0000000xxxxxxxxxx111xxxxx0110011'],
     ['fence', 'xxxxxxxxxxxxxxxxx000xxxxx0001111'],
     ['fence_i', 'xxxxxxxxxxxxxxxxx001xxxxx0001111'],
-    ['scall', '00000000000000000000000001110011'],
-    ['sbreak', '00000000000100000000000001110011'],
+    # ['scall', '00000000000000000000000001110011'],
+    # ['sbreak', '00000000000100000000000001110011'],
 
 ]
 
@@ -296,12 +296,3 @@ def execute_fence_i(s, inst):
     # TODO: MMU flush icache
     s.pc += 4
 
-
-def execute_scall(s, inst):
-    raise NotImplementedInstError()
-    s.pc += 4
-
-
-def execute_sbreak(s, inst):
-    raise NotImplementedInstError()
-    s.pc += 4

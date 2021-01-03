@@ -106,11 +106,11 @@ reg_map = {
 
 other_encodings = [
     ['sret', '00010000000000000000000001110011'],
-    ['sfence_vm', '000100000001xxxxx000000001110011'],
-    ['wfi', '00010000001000000000000001110011'],
-    ['mrth', '00110000011000000000000001110011'],
-    ['mrts', '00110000010100000000000001110011'],
-    ['hrts', '00100000010100000000000001110011'],
+    # ['sfence_vm', '000100000001xxxxx000000001110011'],
+    # ['wfi', '00010000001000000000000001110011'],
+    # ['mrth', '00110000011000000000000001110011'],
+    # ['mrts', '00110000010100000000000001110011'],
+    # ['hrts', '00100000010100000000000001110011'],
 
     ['csrrw', 'xxxxxxxxxxxxxxxxx001xxxxx1110011'],
     ['csrrs', 'xxxxxxxxxxxxxxxxx010xxxxx1110011'],
@@ -119,30 +119,10 @@ other_encodings = [
     ['csrrsi', 'xxxxxxxxxxxxxxxxx110xxxxx1110011'],
     ['csrrci', 'xxxxxxxxxxxxxxxxx111xxxxx1110011'],
 
-    ['custom0', 'xxxxxxxxxxxxxxxxx000xxxxx0001011'],
-    ['custom0_rs1', 'xxxxxxxxxxxxxxxxx010xxxxx0001011'],
-    ['custom0_rs1_rs2', 'xxxxxxxxxxxxxxxxx011xxxxx0001011'],
-    ['custom0_rd', 'xxxxxxxxxxxxxxxxx100xxxxx0001011'],
-    ['custom0_rd_rs1', 'xxxxxxxxxxxxxxxxx110xxxxx0001011'],
-    ['custom0_rd_rs1_rs2', 'xxxxxxxxxxxxxxxxx111xxxxx0001011'],
-    ['custom1', 'xxxxxxxxxxxxxxxxx000xxxxx0101011'],
-    ['custom1_rs1', 'xxxxxxxxxxxxxxxxx010xxxxx0101011'],
-    ['custom1_rs1_rs2', 'xxxxxxxxxxxxxxxxx011xxxxx0101011'],
-    ['custom1_rd', 'xxxxxxxxxxxxxxxxx100xxxxx0101011'],
-    ['custom1_rd_rs1', 'xxxxxxxxxxxxxxxxx110xxxxx0101011'],
-    ['custom1_rd_rs1_rs2', 'xxxxxxxxxxxxxxxxx111xxxxx0101011'],
-    ['custom2', 'xxxxxxxxxxxxxxxxx000xxxxx1011011'],
-    ['custom2_rs1', 'xxxxxxxxxxxxxxxxx010xxxxx1011011'],
-    ['custom2_rs1_rs2', 'xxxxxxxxxxxxxxxxx011xxxxx1011011'],
-    ['custom2_rd', 'xxxxxxxxxxxxxxxxx100xxxxx1011011'],
-    ['custom2_rd_rs1', 'xxxxxxxxxxxxxxxxx110xxxxx1011011'],
-    ['custom2_rd_rs1_rs2', 'xxxxxxxxxxxxxxxxx111xxxxx1011011'],
-    ['custom3', 'xxxxxxxxxxxxxxxxx000xxxxx1111011'],
-    ['custom3_rs1', 'xxxxxxxxxxxxxxxxx010xxxxx1111011'],
-    ['custom3_rs1_rs2', 'xxxxxxxxxxxxxxxxx011xxxxx1111011'],
-    ['custom3_rd', 'xxxxxxxxxxxxxxxxx100xxxxx1111011'],
-    ['custom3_rd_rs1', 'xxxxxxxxxxxxxxxxx110xxxxx1111011'],
-    ['custom3_rd_rs1_rs2', 'xxxxxxxxxxxxxxxxx111xxxxx1111011'],
+    # ['custom0', 'xxxxxxxxxxxxxxxxxxxxxxxxx0001011'],
+    # ['custom1', 'xxxxxxxxxxxxxxxxxxxxxxxxx0101011'],
+    # ['custom2', 'xxxxxxxxxxxxxxxxxxxxxxxxx1011011'],
+    # ['custom3', 'xxxxxxxxxxxxxxxxxxxxxxxxx1111011'],
 
     # HACK: mapping fsd and fld ops to nop for translatable subset
     ['nop', 'xxxxxxxxxxxxxxxxx011xxxxx0000111'],
@@ -177,31 +157,6 @@ def execute_sret(s, inst):
         s.pc = s.sepc
     else:
         raise FatalError("sret encountered on privilege level %d" % s.prv)
-
-
-def execute_sfence_vm(s, inst):
-    raise NotImplementedInstError()
-    s.pc += 4
-
-
-def execute_wfi(s, inst):
-    raise NotImplementedInstError()
-    s.pc += 4
-
-
-def execute_mrth(s, inst):
-    raise NotImplementedInstError()
-    s.pc += 4
-
-
-def execute_mrts(s, inst):
-    raise NotImplementedInstError()
-    s.pc += 4
-
-
-def execute_hrts(s, inst):
-    raise NotImplementedInstError()
-    s.pc += 4
 
 
 def execute_csrrw(s, inst):
@@ -251,125 +206,6 @@ def execute_csrrci(s, inst):
     s.rf[inst.rd] = old_val
     s.pc += 4
 
-
-def execute_custom0(s, inst):
-    raise NotImplementedInstError()
-    s.pc += 4
-
-
-def execute_custom0_rs1(s, inst):
-    raise NotImplementedInstError()
-    s.pc += 4
-
-
-def execute_custom0_rs1_rs2(s, inst):
-    raise NotImplementedInstError()
-    s.pc += 4
-
-
-def execute_custom0_rd(s, inst):
-    raise NotImplementedInstError()
-    s.pc += 4
-
-
-def execute_custom0_rd_rs1(s, inst):
-    raise NotImplementedInstError()
-    s.pc += 4
-
-
-def execute_custom0_rd_rs1_rs2(s, inst):
-    raise NotImplementedInstError()
-    s.pc += 4
-
-
-def execute_custom1(s, inst):
-    raise NotImplementedInstError()
-    s.pc += 4
-
-
-def execute_custom1_rs1(s, inst):
-    raise NotImplementedInstError()
-    s.pc += 4
-
-
-def execute_custom1_rs1_rs2(s, inst):
-    raise NotImplementedInstError()
-    s.pc += 4
-
-
-def execute_custom1_rd(s, inst):
-    raise NotImplementedInstError()
-    s.pc += 4
-
-
-def execute_custom1_rd_rs1(s, inst):
-    raise NotImplementedInstError()
-    s.pc += 4
-
-
-def execute_custom1_rd_rs1_rs2(s, inst):
-    raise NotImplementedInstError()
-    s.pc += 4
-
-
-def execute_custom2(s, inst):
-    raise NotImplementedInstError()
-    s.pc += 4
-
-
-def execute_custom2_rs1(s, inst):
-    raise NotImplementedInstError()
-    s.pc += 4
-
-
-def execute_custom2_rs1_rs2(s, inst):
-    raise NotImplementedInstError()
-    s.pc += 4
-
-
-def execute_custom2_rd(s, inst):
-    raise NotImplementedInstError()
-    s.pc += 4
-
-
-def execute_custom2_rd_rs1(s, inst):
-    raise NotImplementedInstError()
-    s.pc += 4
-
-
-def execute_custom2_rd_rs1_rs2(s, inst):
-    raise NotImplementedInstError()
-    s.pc += 4
-
-
-def execute_custom3(s, inst):
-    raise NotImplementedInstError()
-    s.pc += 4
-
-
-def execute_custom3_rs1(s, inst):
-    raise NotImplementedInstError()
-    s.pc += 4
-
-
-def execute_custom3_rs1_rs2(s, inst):
-    raise NotImplementedInstError()
-    s.pc += 4
-
-
-def execute_custom3_rd(s, inst):
-    raise NotImplementedInstError()
-    s.pc += 4
-
-
-def execute_custom3_rd_rs1(s, inst):
-    raise NotImplementedInstError()
-    s.pc += 4
-
-
-def execute_custom3_rd_rs1_rs2(s, inst):
-    raise NotImplementedInstError()
-    s.pc += 4
 
 
 # =======================================================================
