@@ -161,7 +161,7 @@ class RAM(MemoryLike, Monitor):
             return MemError()
         if addr % size_bytes != 0:
             return MemError()
-        self.monitor(False, addr, size_bytes, value)
+        self.monitor(True, addr, size_bytes, value)
         word_addr = addr // self.WORD_SIZE
         old_word = self.words[word_addr]
         shift = (addr % self.WORD_SIZE) * 8
@@ -211,7 +211,7 @@ class MMIO(MemoryLike, Monitor):
         if err is not None:
             return err
 
-        self.monitor(False, addr, size_bytes, value)
+        self.monitor(True, addr, size_bytes, value)
         handler = self.write_handlers.get(addr, self.default_write_handler)
         handler(addr, value)
         return None
@@ -266,7 +266,7 @@ class AddressSpace(MemoryLike, Monitor):
         err, region_index, relative_addr = self._find_region(addr)
         if err:
             return err
-        self.monitor(False, addr, size_bytes, value)
+        self.monitor(True, addr, size_bytes, value)
         return self.regions[region_index][1].write(relative_addr, size_bytes, value)
 
 
