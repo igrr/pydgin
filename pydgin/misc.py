@@ -27,8 +27,8 @@ class FatalError(Exception):
 
 class NotImplementedInstError(FatalError):
 
-    def __init__(self, msg="Instruction not implemented"):
-        FatalError.__init__(self, msg)
+    def __init__(self, inst=0):
+        FatalError.__init__(self, msg="Instruction {:x} not implemented".format(inst))
 
 
 # -----------------------------------------------------------------------
@@ -52,10 +52,13 @@ def load_program(fp, mem, alignment=0, is_64bit=False):
     return entrypoint
 
 
+def disass_default(inst):
+    return inst.str
+
 # -----------------------------------------------------------------------
 # create_risc_decoder
 # -----------------------------------------------------------------------
-def create_risc_decoder(encodings, isa_globals, debug=False):
+def create_risc_decoder(encodings, isa_globals, debug=False, unhandled=None):
     # removes all characters other than '0', '1', and 'x'
     def remove_ignored_chars(enc):
         return [enc[0], re.sub('[^01x]', '', enc[1])]
@@ -69,7 +72,8 @@ def create_risc_decoder(encodings, isa_globals, debug=False):
 
     decoder = ''
     for i, inst in enumerate(bit_fields):
-        # print i, encodings[i][0], inst
+        name = encodings[i][0]
+        # print i, name, inst
         bit = 0
         conditions = []
         for field in reversed(inst):
@@ -81,18 +85,26 @@ def create_risc_decoder(encodings, isa_globals, debug=False):
             bit += nbits
         decoder += 'if   ' if i == 0 else '  elif '
         decoder += ' and '.join(reversed(conditions)) + ':\n'
-        if debug:
-            decoder += '    return "{0}", execute_{0}\n'.format(encodings[i][0])
+        if ("disass_" + name) in isa_globals:
+            disass_func = "disass_" + name
         else:
-            decoder += '    return execute_{}\n'.format(encodings[i][0])
+            disass_func = "disass_default"
+
+        if debug:
+            decoder += '    return "{0}", execute_{0}, {1}\n'.format(name, disass_func)
+        else:
+            decoder += '    return execute_{}\n'.format(name)
+
+    if not unhandled:
+        unhandled = "raise NotImplementedInstError(inst)"
 
     source = '''
 # @elidable
 def decode( inst ):
   {decoder_tree}
   else:
-    raise FatalError('Invalid instruction 0x%x!' % inst )
-  '''.format(decoder_tree=decoder)
+    {unhandled}
+  '''.format(decoder_tree=decoder, unhandled=unhandled)
 
     # print(source)
     environment = dict(globals().items())
