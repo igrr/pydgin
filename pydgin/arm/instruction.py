@@ -103,7 +103,7 @@ class Instruction(object):
 
     @property
     def L(self):
-       return (self.bits >> 20) & 0b1
+        return (self.bits >> 20) & 0b1
 
     @property
     def S(self):
@@ -116,3 +116,7 @@ class Instruction(object):
     @property
     def R(self):
         return (self.bits >> 22) & 0b1
+
+    @property
+    def link(self):
+        return (self.bits >> 24) & 0b1
